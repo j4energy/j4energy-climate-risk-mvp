@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>J4Energy - Climate Risk Assessment</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background:#f8f9fa; color:#333; min-height:100vh; }
+    .header { background:white; border-bottom:1px solid #e0e0e0; padding:15px 30px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+    .logo-container { display:flex; align-items:center; gap:20px; }
+    .logo { height:40px; }
+    .nav-buttons { display:flex; gap:10px; }
+    .nav-btn { padding:8px 16px; background:transparent; border:1px solid #1565C0; color:#1565C0; border-radius:6px; cursor:pointer; transition:all .3s ease; }
+    .nav-btn:hover { background:#1565C0; color:white; }
+    .nav-btn.active { background:#1565C0; color:white; }
+    .container { max-width:1400px; margin:30px auto; padding:0 30px; }
+    .module-card { background:white; border-radius:12px; padding:25px; margin-bottom:25px; box-shadow:0 2px 8px rgba(0,0,0,0.08); border:1px solid #e0e0e0; }
+    .module-header { display:flex; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #f0f0f0; }
+    .module-number { width:35px; height:35px; background:linear-gradient(135deg,#1565C0,#0D47A1); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:15px; }
+    .module-title { color:#1565C0; font-size:1.3rem; flex:1; }
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:20px; }
+    .form-group { display:flex; flex-direction:column; }
+    .form-group.full-width { grid-column:1 / -1; }
+    label { font-weight:500; color:#555; margin-bottom:6px; font-size:.9rem; }
+    .required { color:#ff5252; }
+    input,select,textarea { padding:10px; border:1px solid #ddd; border-radius:6px; font-size:.95rem; transition:all .3s ease; background:white; }
+    input:focus,select:focus,textarea:focus { outline:none; border-color:#1565C0; box-shadow:0 0 0 3px rgba(21,101,192,.1); }
+    input[readonly] { background:#f5f5f5; cursor:not-allowed; }
+    textarea { resize:vertical; min-height:80px; }
+    .risk-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
+    .risk-item { display:flex; flex-direction:column; padding:12px; background:#f8f9fa; border-radius:8px; border:1px solid #e0e0e0; transition:all .3s ease; }
+    .risk-item:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,.1); }
+    .risk-name { font-size:.85rem; color:#666; margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px; }
+    .risk-value { font-size:1.2rem; font-weight:bold; display:flex; align-items:center; gap:5px; }
+    .risk-low { color:#4CAF50; } .risk-medium { color:#FF9800; } .risk-high { color:#f44336; }
+    .impact-result { background:linear-gradient(135deg,#f5f7fa,#e3f2fd); border-left:4px solid #1565C0; padding:20px; border-radius:8px; margin-top:20px; }
+    .impact-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:20px; margin-top:15px; }
+    .metric { text-align:center; background:white; padding:15px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,.05); }
+    .metric-label { font-size:.85rem; color:#666; margin-bottom:8px; }
+    .metric-value { font-size:1.5rem; font-weight:bold; color:#1565C0; }
+    .action-toolbar { display:flex; justify-content:space-between; align-items:center; padding:15px; background:#f5f7fa; border-radius:8px; margin-bottom:20px; }
+    .total-investment { font-size:1.1rem; color:#333; }
+    .total-investment strong { font-size:1.3rem; color:#1565C0; }
+    button { background:#1565C0; color:white; border:none; padding:10px 20px; border-radius:6px; font-size:.95rem; font-weight:500; cursor:pointer; transition:all .3s ease; }
+    button:hover:not(:disabled) { background:#0D47A1; transform:translateY(-1px); box-shadow:0 4px 8px rgba(21,101,192,.3); }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-secondary { background:#6c757d; } .btn-secondary:hover { background:#5a6268; }
+    .btn-danger { background:#dc3545; } .btn-danger:hover { background:#c82333; }
+    .action-form { background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px; border:1px dashed #1565C0; }
+    .action-table { overflow-x:auto; border-radius:8px; border:1px solid #e0e0e0; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th { background:linear-gradient(135deg,#1565C0,#0D47A1); color:white; padding:12px; text-align:left; font-size:.9rem; font-weight:500; }
+    .table td { padding:12px; border-bottom:1px solid #e0e0e0; font-size:.95rem; }
+    .table tr:hover { background:#f8f9fa; }
+    .table-empty { text-align:center; padding:40px; color:#999; font-style:italic; }
+    .status-badge { padding:4px 12px; border-radius:12px; font-size:.85rem; font-weight:500; display:inline-block; }
+    .status-completed { background:#d4edda; color:#155724; }
+    .status-in-progress { background:#fff3cd; color:#856404; }
+    .status-not-started { background:#f8d7da; color:#721c24; }
+    .hidden { display:none; }
+    [data-section] { display:none; }
+    [data-section].active { display:block; }
+    @media (max-width: 768px) { .form-grid { grid-template-columns:1fr; } .risk-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo-container">
+      <img class="logo" src="data:image/png;base64,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" alt="j4energy logo" />
+      <h2 style="color:#1565C0; font-size:1.2rem;">Climate Risk Assessment</h2>
+    </div>
+    <div class="nav-buttons">
+      <button id="btnRisk" class="nav-btn active">Risk Assessment</button>
+      <button id="btnSupply" class="nav-btn">Supply Chain</button>
+      <button id="btnReports" class="nav-btn">Reports</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- SECTION: Risk Assessment -->
+    <section data-section="risk" class="active">
+      <!-- Module 1 -->
+      <div class="module-card">
+        <div class="module-header">
+          <div class="module-number">1</div>
+          <h2 class="module-title">Site Information & Risk Profile</h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="siteName">Site Name <span class="required">*</span></label>
+            <input type="text" id="siteName" value="Effebi S.r.l." required>
+          </div>
+          <div class="form-group">
+            <label for="siteType">Site Type</label>
+            <select id="siteType">
+              <option value="factory" selected>Factory</option>
+              <option value="store">Store</option>
+              <option value="warehouse">Warehouse</option>
+              <option value="office">Office</option>
+              <option value="supplier">Supplier</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" value="Italy">
+          </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" value="SCANDICCI (FI)">
+          </div>
+          <div class="form-group">
+            <label for="latitude">Latitude</label>
+            <input type="number" id="latitude" value="43.76" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="longitude">Longitude</label>
+            <input type="number" id="longitude" value="11.18" step="0.01">
+          </div>
+        </div>
+
+        <h4 style="margin: 20px 0 15px; color: #1565C0;">Climate Risk Exposure (1-5 scale)</h4>
+        <div class="risk-grid">
+          <div class="risk-item"><span class="risk-name">Earthquake</span><span class="risk-value risk-low">2/5</span></div>
+          <div class="risk-item"><span class="risk-name">Flood</span><span class="risk-value risk-high">3/5</span></div>
+          <div class="risk-item"><span class="risk-name">River Flood</span><span class="risk-value risk-medium">50yr</span></div>
+          <div class="risk-item"><span class="risk-name">Storm</span><span class="risk-value risk-low">0/5</span></div>
+          <div class="risk-item"><span class="risk-name">Tornado</span><span class="risk-value risk-low">2/5</span></div>
+          <div class="risk-item"><span class="risk-name">Cyclone</span><span class="risk-value risk-low">0/5</span></div>
+          <div class="risk-item"><span class="risk-name">Tsunami</span><span class="risk-value risk-low">0/5</span></div>
+          <div class="risk-item"><span class="risk-name">Wildfire</span><span class="risk-value risk-low">0/5</span></div>
+        </div>
+
+        <div style="background:#fff3cd; padding:15px; border-radius:8px; margin-top:15px;">
+          <strong style="color:#856404;">Overall Risk Score: </strong>
+          <span style="color:#f44336; font-weight:bold; font-size:1.2rem;">HIGH</span>
+        </div>
+      </div>
+
+      <!-- Module 2 -->
+      <div class="module-card">
+        <div class="module-header"><div class="module-number">2</div><h2 class="module-title">Physical & Financial Impact Assessment</h2></div>
+        <h4 style="margin-bottom: 15px; color: #666;">Assess potential impact for high-risk hazards</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="hazardSelect">Select Hazard to Assess <span class="required">*</span></label>
+            <select id="hazardSelect">
+              <option value="">-- Select Hazard --</option>
+              <option value="flood" selected>Flood (High Risk)</option>
+              <option value="earthquake">Earthquake</option>
+              <option value="tornado">Tornado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="floodDepth">Flood Depth (meters)</label>
+            <input type="number" id="floodDepth" placeholder="e.g. 1.5" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="assetDamage">Asset Damage (%)</label>
+            <input type="number" id="assetDamage" placeholder="e.g. 30" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label for="interruption">Days of Interruption <span class="required">*</span></label>
+            <input type="number" id="interruption" placeholder="e.g. 30" min="0">
+          </div>
+          <div class="form-group">
+            <label for="financialImpact">Financial Impact (€) <span class="required">*</span></label>
+            <input type="number" id="financialImpact" placeholder="e.g. 500000" min="0">
+          </div>
+          <div class="form-group">
+            <label for="revenueLoss">Daily Revenue Loss (€)</label>
+            <input type="number" id="revenueLoss" placeholder="e.g. 15000" min="0">
+          </div>
+        </div>
+        <button onclick="calculateImpact()" style="margin-top: 15px;">Calculate Impact</button>
+        <div class="impact-result" id="impactResult" style="display:none;">
+          <h4 style="color:#1565C0; margin-bottom:10px;">📊 Calculated Impact Assessment</h4>
+          <div class="impact-metrics">
+            <div class="metric"><div class="metric-label">Impact Level</div><div class="metric-value" id="impactLevel">-</div></div>
+            <div class="metric"><div class="metric-label">Priority</div><div class="metric-value" id="impactPriority">-</div></div>
+            <div class="metric"><div class="metric-label">Total Loss</div><div class="metric-value" id="totalLoss">-</div></div>
+            <div class="metric"><div class="metric-label">Recovery Time</div><div class="metric-value" id="recoveryTime">-</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 3 -->
+      <div class="module-card">
+        <div class="module-header"><div class="module-number">3</div><h2 class="module-title">Adaptation & Resilience Plan</h2></div>
+        <div class="action-toolbar">
+          <div class="total-investment">Total Adaptation Investment: <strong id="totalInvestment">€0</strong></div>
+          <button onclick="toggleActionForm()">➕ Add Adaptation Action</button>
+        </div>
+        <div class="action-form hidden" id="actionForm">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="actionDesc">Action Description <span class="required">*</span></label>
+              <textarea id="actionDesc" placeholder="e.g., Move chemicals storage to level 2 to prevent flood damage"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="actionInvestment">Investment Required (€)</label>
+              <input type="number" id="actionInvestment" placeholder="e.g., 50000" min="0">
+            </div>
+            <div class="form-group">
+              <label for="actionCategory">Cost Category</label>
+              <select id="actionCategory">
+                <option value="no-cost">No-Cost Action</option>
+                <option value="low-cost">Low Cost (&lt; €10k)</option>
+                <option value="medium-cost">Medium Cost (€10k-50k)</option>
+                <option value="high-cost">High Cost (&gt; €50k)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="actionPriority">Priority</label>
+              <select id="actionPriority">
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="actionStatus">Status</label>
+              <select id="actionStatus">
+                <option value="not-started">Not Started</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="actionResponsible">Responsible Person/Dept</label>
+              <input type="text" id="actionResponsible" placeholder="e.g., Facility Manager">
+            </div>
+            <div class="form-group">
+              <label for="actionDeadline">Target Deadline</label>
+              <input type="date" id="actionDeadline">
+            </div>
+          </div>
+          <div style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="saveAction()">💾 Save Action</button>
+            <button class="btn-secondary" onclick="toggleActionForm()">Cancel</button>
+          </div>
+        </div>
+        <div class="action-table">
+          <table class="table">
+            <thead>
+              <tr><th>Description</th><th>Category</th><th>Investment</th><th>Priority</th><th>Status</th><th>Deadline</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="actionsList">
+              <tr class="table-empty"><td colspan="7">No adaptation actions added yet. Click "Add Adaptation Action" to begin building your resilience plan.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="module-card">
+        <div class="module-header"><div class="module-number">📊</div><h2 class="module-title">Risk Summary Dashboard</h2></div>
+        <div class="impact-metrics">
+          <div class="metric"><div class="metric-label">Sites at High Risk</div><div class="metric-value" style="color:#f44336;">1</div></div>
+          <div class="metric"><div class="metric-label">Total Financial Exposure</div><div class="metric-value">€500k</div></div>
+          <div class="metric"><div class="metric-label">Adaptation Progress</div><div class="metric-value">0%</div></div>
+          <div class="metric"><div class="metric-label">ISO 14091 Compliance</div><div class="metric-value" style="color:#FF9800;">Pending</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Supply Chain -->
+    <section data-section="supply">
+      <div class="module-card">
+        <div class="module-header"><div class="module-number">SC</div><h2 class="module-title">Supply Chain</h2></div>
+        <p>Sezione di esempio per la supply chain (placeholder). Qui potremo caricare fornitori, punteggi di rischio e alternative.</p>
+      </div>
+    </section>
+
+    <!-- SECTION: Reports -->
+    <section data-section="reports">
+      <div class="module-card">
+        <div class="module-header"><div class="module-number">R</div><h2 class="module-title">Reports</h2></div>
+        <p>Sezione report (placeholder). Esporteremo PDF/Excel con il piano di adattamento e KPI.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ---- Global State ----
+    let actionPlan = [];
+    let currentImpact = { level: 'N/A', priority: 'N/A' };
+
+    // ---- Navigation ----
+    (function setupNav() {
+      const buttons = [
+        [document.getElementById('btnRisk'), 'risk'],
+        [document.getElementById('btnSupply'), 'supply'],
+        [document.getElementById('btnReports'), 'reports'],
+      ];
+      const sections = document.querySelectorAll('[data-section]');
+      function activate(key) {
+        sections.forEach(s => s.classList.toggle('active', s.getAttribute('data-section') === key));
+        buttons.forEach(([btn, name]) => btn.classList.toggle('active', name === key));
+      }
+      buttons.forEach(([btn, name]) => btn.addEventListener('click', () => activate(name)));
+      // default
+      activate('risk');
+    })();
+
+    // ---- Impact Calculator ----
+    function calculateImpact() {
+      const days = parseInt(document.getElementById('interruption').value) || 0;
+      const financial = parseInt(document.getElementById('financialImpact').value) || 0;
+      const revenueLoss = parseInt(document.getElementById('revenueLoss').value) || 0;
+      const assetDamage = parseInt(document.getElementById('assetDamage').value) || 0;
+
+      if (days > 0 || financial > 0) {
+        let level, priority;
+        if (days > 30) { level = 'Catastrophic'; priority = 'Critical'; }
+        else if (days > 7) { level = 'Major'; priority = 'High'; }
+        else if (days > 1) { level = 'Moderate'; priority = 'Medium'; }
+        else { level = 'Minor'; priority = 'Low'; }
+
+        const totalLoss = financial + (revenueLoss * days);
+        document.getElementById('impactLevel').textContent = level;
+        document.getElementById('impactPriority').textContent = priority;
+        document.getElementById('totalLoss').textContent = '€' + totalLoss.toLocaleString();
+        document.getElementById('recoveryTime').textContent = days + ' days';
+
+        const priorityElement = document.getElementById('impactPriority');
+        priorityElement.style.color =
+          priority === 'Critical' ? '#f44336' :
+          priority === 'High' ? '#FF9800' :
+          priority === 'Medium' ? '#FFC107' : '#4CAF50';
+
+        document.getElementById('impactResult').style.display = 'block';
+        currentImpact = { level, priority };
+      }
+    }
+
+    // ---- Action Plan ----
+    function toggleActionForm() {
+      const form = document.getElementById('actionForm');
+      form.classList.toggle('hidden');
+      if (form.classList.contains('hidden')) {
+        document.getElementById('actionDesc').value = '';
+        document.getElementById('actionInvestment').value = '';
+        document.getElementById('actionCategory').selectedIndex = 0;
+        document.getElementById('actionPriority').selectedIndex = 0;
+        document.getElementById('actionStatus').selectedIndex = 0;
+        document.getElementById('actionResponsible').value = '';
+        document.getElementById('actionDeadline').value = '';
+      }
+    }
+
+    function saveAction() {
+      const desc = document.getElementById('actionDesc').value.trim();
+      const investment = parseFloat(document.getElementById('actionInvestment').value) || 0;
+      if (!desc) { alert('Please provide an action description'); return; }
+      const action = {
+        id: Date.now(),
+        description: desc,
+        investment: investment,
+        category: document.getElementById('actionCategory').value,
+        priority: document.getElementById('actionPriority').value,
+        status: document.getElementById('actionStatus').value,
+        responsible: document.getElementById('actionResponsible').value || 'TBD',
+        deadline: document.getElementById('actionDeadline').value || 'TBD'
+      };
+      actionPlan.push(action);
+      renderActionPlan();
+      toggleActionForm();
+      updateTotalInvestment();
+    }
+
+    function deleteAction(id) {
+      if (confirm('Are you sure you want to delete this action?')) {
+        actionPlan = actionPlan.filter(a => a.id !== id);
+        renderActionPlan();
+        updateTotalInvestment();
+      }
+    }
+
+    function renderActionPlan() {
+      const container = document.getElementById('actionsList');
+      if (actionPlan.length === 0) {
+        container.innerHTML = '<tr class="table-empty"><td colspan="7">No adaptation actions added yet. Click "Add Adaptation Action" to begin building your resilience plan.</td></tr>';
+        return;
+      }
+      container.innerHTML = actionPlan.map(action => {
+        const statusClass = 'status-' + action.status.replace(' ', '-');
+        const priorityColor = action.priority === 'critical' ? '#f44336' :
+                              action.priority === 'high' ? '#FF9800' :
+                              action.priority === 'medium' ? '#FFC107' : '#4CAF50';
+        const deadline = action.deadline === 'TBD' ? 'TBD' : new Date(action.deadline).toLocaleDateString();
+        return `
+          <tr>
+            <td>${action.description}</td>
+            <td>${action.category.replace('-', ' ').toUpperCase()}</td>
+            <td>€${action.investment.toLocaleString()}</td>
+            <td><span style="color: ${priorityColor}; font-weight: bold;">${action.priority.toUpperCase()}</span></td>
+            <td><span class="status-badge ${statusClass}">${action.status.replace('-', ' ').toUpperCase()}</span></td>
+            <td>${deadline}</td>
+            <td><button class="btn-danger" onclick="deleteAction(${action.id})" style="padding:5px 10px; font-size:.85rem;">🗑️</button></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function updateTotalInvestment() {
+      const total = actionPlan.reduce((sum, a) => sum + (a.investment || 0), 0);
+      document.getElementById('totalInvestment').textContent = '€' + total.toLocaleString();
+    }
+  </script>
+</body>
+</html>
